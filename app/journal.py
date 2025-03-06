@@ -60,7 +60,7 @@ app, rt = fast_app(
             /* Each entry row */
             .entry {
                 display: flex;
-                align-items: center;
+                align-items: flex-start;
                 margin-bottom: 0.1rem;
                 width: fit-content;
             }
