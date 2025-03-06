@@ -44,6 +44,7 @@ A simple web-based journal application to keep track of your daily thoughts and 
 
 ## File Structure 📁
 
+```bash
 myjournal/
 ├── app/
 │   └── journal.py           # Main application code
@@ -52,15 +53,7 @@ myjournal/
 ├── .gitignore               # Specifies which files to ignore
 ├── requirements.txt         # List of Python dependencies
 └── README.md                # This file explains the project
-
-myjournal/
-├── app/
-│   └── journal.py           # Main application code
-├── data/
-│   └── journal_entries.json # Stores your journal entries (will be created automatically)
-├── .gitignore               # Specifies which files to ignore
-├── requirements.txt         # List of Python dependencies
-└── README.md                # This file explains the project
+```
 
 ## How to Use 🤔
 
