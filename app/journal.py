@@ -49,20 +49,18 @@ app, rt = fast_app(
                 border-radius: 4px;
             }
 
-            /* Journal list container */
             .journal-list {
                 display: flex;
                 flex-direction: column;
                 gap: 0.2rem;
-                width: fit-content;
+                align-items: flex-start;
+                width: 100%;
             }
-
-            /* Each entry row */
             .entry {
                 display: flex;
                 align-items: flex-start;
                 margin-bottom: 0.1rem;
-                width: fit-content;
+                width: 100%;
             }
             .month-year {
                 width: 6rem;
@@ -356,6 +354,5 @@ def view(request=None):
             view_content()
         )
     )
-
 
 serve(port=7127)
