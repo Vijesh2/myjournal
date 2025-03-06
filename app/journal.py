@@ -7,7 +7,7 @@ import uuid
 import os
 from dataclasses import dataclass
 
-JOURNAL_ENTRIES_FILE = "journal_entries.json"
+JOURNAL_ENTRIES_FILE = "data/journal_entries.json"
 
 @dataclass
 class JournalEntry:
@@ -82,22 +82,16 @@ app, rt = fast_app(
                 border-radius: 2px;
                 background-color: #ccc;
             }
-            /* Example of a "selected" dot */
             .dot.selected {
                 background-color: #007BFF;
             }
-
-             /* New Entry Form */
             #new-entry-form-section {
                 margin-top: 20px;
             }
-
-            /*list view*/
             .list-entry {
               border-bottom: 1px solid #ccc;
               padding: 10px 0;
             }
-
             .list-entry .date {
               font-weight: bold;
             }
@@ -108,7 +102,7 @@ app, rt = fast_app(
 def heading():
     return Div(
         H2("Journal"),
-        Div(  # add div here to keep button group together
+        Div(
             Button(
                 UkIcon('plus', height=17, width=17),
                 " New Entry ",
@@ -117,8 +111,7 @@ def heading():
                 hx_target="#new-entry-form-section",
                 hx_swap="beforeend",
                 id="show_entry_button"
-            ),
-          
+            ),          
             cls="flex gap-x-2 items-center"
         ),
         cls="flex justify-between items-center",
@@ -169,7 +162,6 @@ def hide_form():
 @rt("/save_entry")
 def save_entry(entry: JournalEntry): #use entry: JournalEntry
     """Handles saving journal entries to a JSON file."""
-    print("Hello I am here!!")
     entry_date = entry.entry_date #get data from entry
     entry_text = entry.entry_text #get data from entry
 
