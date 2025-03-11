@@ -81,6 +81,7 @@ app, rt = fast_app(
                 height: 12px;
                 border-radius: 2px;
                 background-color: #ccc;
+                cursor: pointer;
             }
             .dot.selected {
                 background-color: #007BFF;
@@ -88,12 +89,36 @@ app, rt = fast_app(
             #new-entry-form-section {
                 margin-top: 20px;
             }
+            #view-entry-section {
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+            #view-entry-section.show {
+                display: block; /* Show when active */
+            }
+            #view-entry-section {
+                display: none; /* Initially hidden */
+            }
             .list-entry {
               border-bottom: 1px solid #ccc;
               padding: 10px 0;
             }
             .list-entry .date {
               font-weight: bold;
+            }
+            /* Entry View */
+            #entry-view {
+              background-color: #f8f8f8;
+              border: 1px solid #ddd;
+              padding: 20px;
+              margin: 10px 0;
+            }
+            #entry-view .entry-date {
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            #entry-view .entry-text {
+              white-space: pre-wrap;
             }
         """)
     ),
@@ -200,15 +225,17 @@ def load_journal_entries():
     except FileNotFoundError:
         return []
 
-def generate_month_list():
+def generate_month_list(start_year_month=(1905, 1)):
     """
-    Generates a list of (year, month) tuples for every month from January 1905 to the present day.
+    Generates a list of (year, month) tuples from a given start date to the present day.
+
+    Args:
+        start_year_month (tuple): A tuple in the format (start_year, start_month).
 
     Returns:
         list: A list of tuples, where each tuple is (year, month).
     """
-    start_year = 1905
-    start_month = 1
+    start_year, start_month = start_year_month
     today = date.today()
     current_year = today.year
     current_month = today.month
@@ -260,6 +287,27 @@ def generate_days_in_month(year_month: tuple) -> list:
         print(f"Error: Invalid Input type, must be tuple of (year, month).")
         return []  # Return an empty list on error
 
+@rt("/show_entry/{date_str}")
+def show_entry(date_str:str):
+    """Shows the details of journal entries for a specific date."""
+    entries = load_journal_entries()
+    entries_for_date = [e for e in entries if e["date"] == date_str]
+
+    if not entries_for_date:
+        return Div(
+            Div("No entries found for this date"),
+            HxSwap("innerHTML"),
+            id="entry-view"
+            )
+
+    entry_view = Div(id="entry-view")
+    for entry in entries_for_date:
+        entry_view(Div(
+            Div(entry["date"], cls="entry-date"),
+            Div(entry["entry"], cls="entry-text"),
+            
+        ))
+    return entry_view
 
 def dayGrid():
     """
@@ -272,9 +320,18 @@ def dayGrid():
     Returns:
         returns a DivVStacked object
     """
-    month_list = generate_month_list()
     entries = load_journal_entries()
     entry_dates = {entry["date"] for entry in entries}
+
+    # Determine the earliest entry date
+    if entries:
+        earliest_date_str = min(entry_dates)
+        earliest_date = datetime.fromisoformat(earliest_date_str).date()
+        start_year_month = (earliest_date.year, earliest_date.month)
+    else:
+        start_year_month = (1905,1)
+
+    month_list = generate_month_list(start_year_month)
 
     grid = DivVStacked(cls="journal-list")
 
@@ -286,7 +343,16 @@ def dayGrid():
         for day in days:
             date_str = f"{year}-{month:02}-{day:02}"
             dot_cls = "dot selected" if date_str in entry_dates else "dot"
-            dots(Div(cls=dot_cls))
+            dot_attrs = {"cls": dot_cls}
+            if date_str in entry_dates:
+                dot_attrs.update({
+                    "hx_get": f"/show_entry/{date_str}",
+                    "hx_target": "#view-entry-section",
+                    "hx_swap": "outerHTML",
+                    "hx_trigger": "click",
+                    "hx_indicator":".htmx-indicator"
+                })
+            dots(Div(**dot_attrs))
         grid(Div(month_year_label, dots, cls='entry'))
 
     return grid
@@ -302,15 +368,14 @@ def listView():
         if not isinstance(entry.get('date'), str):
             print(f"Skipping entry with invalid date type: {entry}")
             continue
-
         try:
-            datetime.fromisoformat(entry["date"])
+            date.fromisoformat(entry["date"])
             valid_entries.append(entry)
         except (ValueError, TypeError):
             print(f"Skipping invalid entry: {entry}")
 
     # Sort entries by date (newest first)
-    valid_entries.sort(key=lambda x: datetime.fromisoformat(x['date']) , reverse=True)
+    valid_entries.sort(key=lambda x: date.fromisoformat(x['date']) , reverse=True)
 
     list_view = Div(cls="journal-list")
     for entry in valid_entries:
@@ -319,9 +384,10 @@ def listView():
 
 def view_content():
     return Div(id="view-container")(
+        Div(id="view-entry-section"), #add section here.
         Ul(id="component-nav", cls="uk-switcher")(
-                Li(dayGrid()),
-                Li(listView())
+                Li(dayGrid()), #grid view
+                Li(listView()) #list view
         )
     )
 
@@ -343,7 +409,15 @@ def view(request=None):
             heading(),
             Div(tabs),
             Div(id="new-entry-form-section"),
-            view_content()
+            view_content(),
+            Div(
+                Img(
+                    src="/spin.svg",
+                    cls="htmx-indicator",
+                    style="width:2rem",
+                ),
+                style="display:none"
+            )
         )
     )
 
