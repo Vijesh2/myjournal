@@ -99,13 +99,6 @@ app, rt = fast_app(
             #view-entry-section {
                 display: none; /* Initially hidden */
             }
-            .list-entry {
-              border-bottom: 1px solid #ccc;
-              padding: 10px 0;
-            }
-            .list-entry .date {
-              font-weight: bold;
-            }
             /* Entry View */
             #entry-view {
               background-color: #f8f8f8;
@@ -113,20 +106,13 @@ app, rt = fast_app(
               padding: 20px;
               margin: 10px 0;
             }
-            #entry-view .entry-date {
-              font-weight: bold;
-              margin-bottom: 10px;
-            }
-            #entry-view .entry-text {
-              white-space: pre-wrap;
-            }
         """)
     ),
 )
 
 def heading():
     
-    new_entry_div = Div(cls=(FlexT.between, FlexT.middle))(Button(
+    new_entry_div = DivRAligned(Button(
                 UkIcon('plus', height=17, width=17),
                 " New Entry ",
                 cls=ButtonT.primary,
@@ -137,9 +123,8 @@ def heading():
             ))
     
 
-    return Div(
+    return Div(cls=(FlexT.between, FlexT.middle))(
         H2("Journal"), new_entry_div,
-        cls="flex justify-between items-center",
         id="heading-container"
     )
 
@@ -303,9 +288,8 @@ def show_entry(date_str:str):
     entry_view = Div(id="entry-view")
     for entry in entries_for_date:
         entry_view(Div(
-            Div(entry["date"], cls="entry-date"),
-            Div(entry["entry"], cls="entry-text"),
-            
+            Div(entry["date"], cls=(TextT.bold, "mb-2")),
+            Div(entry["entry"], cls="whitespace-pre-wrap")            
         ))
     return entry_view
 
@@ -333,7 +317,8 @@ def dayGrid():
 
     month_list = generate_month_list(start_year_month)
 
-    grid = DivVStacked(cls="journal-list")
+    #grid = DivVStacked(cls="journal-list")
+    grid = DivVStacked(cls="w-full gap-1 align-start")
 
     for year_month in month_list:
         year, month = year_month
@@ -377,9 +362,36 @@ def listView():
     # Sort entries by date (newest first)
     valid_entries.sort(key=lambda x: date.fromisoformat(x['date']) , reverse=True)
 
-    list_view = Div(cls="journal-list")
-    for entry in valid_entries:
-        list_view(Div(Div(entry['date'], cls="date"), Div(entry["entry"]), cls="list-entry"))
+    #list_view = Div(cls="journal-list")
+    list_view = DivVStacked(cls="w-full gap-1 align-start")
+    
+
+#    for entry in valid_entries:
+#        list_view(
+#            Div(
+#                Div(entry['date'], cls=(TextT.bold, "w-24", "shrink-0", "whitespace-nowrap", "text-right")),
+#                Div(entry["entry"], cls=("flex-grow", "whitespace-normal", "break-words", "overflow-hidden")),
+#                cls=(FlexT.row, "items-start", "border-b", "border-gray-300", "py-2", "gap-2")
+#            )
+#        )
+
+    # Define table headers
+    headers = ["Date", "Entry"]
+
+    # Convert the valid entries into table row format
+    body_data = [[entry["date"], entry["entry"]] for entry in valid_entries]
+
+    # Create the table
+    list_view(
+        TableFromLists(
+            header_data=headers,
+            body_data=body_data,
+            cls=(TableT.middle, TableT.divider, TableT.hover, TableT.sm),
+            sortable=True
+        )
+    )
+
+
     return list_view
 
 def view_content():
