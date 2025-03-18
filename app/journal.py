@@ -126,8 +126,7 @@ app, rt = fast_app(
 
 def heading():
     
-    new_entry_div = Div(
-            Button(
+    new_entry_div = Div(cls=(FlexT.between, FlexT.middle))(Button(
                 UkIcon('plus', height=17, width=17),
                 " New Entry ",
                 cls=ButtonT.primary,
@@ -135,10 +134,9 @@ def heading():
                 hx_target="#new-entry-form-section",
                 hx_swap="beforeend",
                 id="show_entry_button"
-            ),          
-            cls="flex gap-x-2 items-center"
-        )
+            ))
     
+
     return Div(
         H2("Journal"), new_entry_div,
         cls="flex justify-between items-center",
