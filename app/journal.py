@@ -125,9 +125,8 @@ app, rt = fast_app(
 )
 
 def heading():
-    return Div(
-        H2("Journal"),
-        Div(
+    
+    new_entry_div = Div(
             Button(
                 UkIcon('plus', height=17, width=17),
                 " New Entry ",
@@ -138,7 +137,10 @@ def heading():
                 id="show_entry_button"
             ),          
             cls="flex gap-x-2 items-center"
-        ),
+        )
+    
+    return Div(
+        H2("Journal"), new_entry_div,
         cls="flex justify-between items-center",
         id="heading-container"
     )
