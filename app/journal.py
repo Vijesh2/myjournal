@@ -106,7 +106,7 @@ app, rt = fast_app(
               padding: 20px;
               margin: 10px 0;
             }
-        """)
+            """)
     ),
 )
 
@@ -272,26 +272,49 @@ def generate_days_in_month(year_month: tuple) -> list:
         print(f"Error: Invalid Input type, must be tuple of (year, month).")
         return []  # Return an empty list on error
 
+
 @rt("/show_entry/{date_str}")
-def show_entry(date_str:str):
+def show_entry(date_str: str):
     """Shows the details of journal entries for a specific date."""
     entries = load_journal_entries()
     entries_for_date = [e for e in entries if e["date"] == date_str]
 
+    # Ensure the container always exists
+    entry_view = Div(
+        id="entry-view",
+        cls="relative border p-4 bg-white shadow-md rounded-md w-fit mx-auto mt-4", hidden=False
+    )
+
+    # Close button
+    close_button = Button(
+        "❌",
+        cls="absolute top-1 right-1 text-white text-sm rounded-full bg-red-500 hover:bg-red-600 p-1 w-6 h-6 flex items-center justify-center cursor-pointer",
+        hx_get="/close-entry",  # Calls the route to clear content
+        hx_target="#entry-view",  # Ensures only this div is emptied
+        hx_swap="outerHTML"  # Clears the content instead of removing the div
+    )
+
     if not entries_for_date:
-        return Div(
-            Div("No entries found for this date"),
-            HxSwap("innerHTML"),
-            id="entry-view"
+        entry_view(
+            Div("No entries found for this date", cls="p-2 text-gray-500"),
+            close_button
+        )
+    else:
+        for entry in entries_for_date:
+            entry_view(
+                Div(
+                    close_button,
+                    Div(entry["date"], cls=(TextT.bold, "mb-2")),
+                    Div(entry["entry"], cls="whitespace-pre-wrap"),
+                )
             )
 
-    entry_view = Div(id="entry-view")
-    for entry in entries_for_date:
-        entry_view(Div(
-            Div(entry["date"], cls=(TextT.bold, "mb-2")),
-            Div(entry["entry"], cls="whitespace-pre-wrap")            
-        ))
     return entry_view
+
+@rt("/close-entry")
+def close_entry():
+    return Div(id="entry-view", hidden=True)  # Leaves an empty, hidden div in place
+
 
 def dayGrid():
     """
@@ -332,7 +355,7 @@ def dayGrid():
             if date_str in entry_dates:
                 dot_attrs.update({
                     "hx_get": f"/show_entry/{date_str}",
-                    "hx_target": "#view-entry-section",
+                    "hx_target": "#entry-view",
                     "hx_swap": "outerHTML",
                     "hx_trigger": "click",
                     "hx_indicator":".htmx-indicator"
@@ -348,7 +371,6 @@ def listView():
     valid_entries = []
     for entry in entries:
         if "date" not in entry:
-             print(f"Skipping entry with missing date: {entry}")
              continue
         if not isinstance(entry.get('date'), str):
             print(f"Skipping entry with invalid date type: {entry}")
@@ -364,16 +386,6 @@ def listView():
 
     #list_view = Div(cls="journal-list")
     list_view = DivVStacked(cls="w-full gap-1 align-start")
-    
-
-#    for entry in valid_entries:
-#        list_view(
-#            Div(
-#                Div(entry['date'], cls=(TextT.bold, "w-24", "shrink-0", "whitespace-nowrap", "text-right")),
-#                Div(entry["entry"], cls=("flex-grow", "whitespace-normal", "break-words", "overflow-hidden")),
-#                cls=(FlexT.row, "items-start", "border-b", "border-gray-300", "py-2", "gap-2")
-#            )
-#        )
 
     # Define table headers
     headers = ["Date", "Entry"]
@@ -396,7 +408,7 @@ def listView():
 
 def view_content():
     return Div(id="view-container")(
-        Div(id="view-entry-section"), #add section here.
+        Div(id="entry-view", hidden=True), 
         Ul(id="component-nav", cls="uk-switcher")(
                 Li(dayGrid()), #grid view
                 Li(listView()) #list view
