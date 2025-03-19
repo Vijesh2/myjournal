@@ -49,13 +49,6 @@ app, rt = fast_app(
                 border-radius: 4px;
             }
 
-            .journal-list {
-                display: flex;
-                flex-direction: column;
-                gap: 0.2rem;
-                align-items: flex-start;
-                width: 100%;
-            }
             .entry {
                 display: flex;
                 align-items: flex-start;
@@ -89,23 +82,17 @@ app, rt = fast_app(
             #new-entry-form-section {
                 margin-top: 20px;
             }
-            #view-entry-section {
-                margin-top: 20px;
-                margin-bottom: 20px;
-            }
-            #view-entry-section.show {
-                display: block; /* Show when active */
-            }
-            #view-entry-section {
-                display: none; /* Initially hidden */
-            }
             /* Entry View */
             #entry-view {
-              background-color: #f8f8f8;
-              border: 1px solid #ddd;
-              padding: 20px;
-              margin: 10px 0;
-            }
+                background-color: #f8f8f8;
+                border: 1px solid #ddd;
+                padding: 20px;
+                margin: 10px 0;
+                width: 100%; /* Make it full width */
+                max-width: 100%; /* Ensure it doesn't overflow */
+                box-sizing: border-box; /* Include padding and border in the width */
+             }
+
             """)
     ),
 )
@@ -340,7 +327,6 @@ def dayGrid():
 
     month_list = generate_month_list(start_year_month)
 
-    #grid = DivVStacked(cls="journal-list")
     grid = DivVStacked(cls="w-full gap-1 align-start")
 
     for year_month in month_list:
@@ -384,7 +370,6 @@ def listView():
     # Sort entries by date (newest first)
     valid_entries.sort(key=lambda x: date.fromisoformat(x['date']) , reverse=True)
 
-    #list_view = Div(cls="journal-list")
     list_view = DivVStacked(cls="w-full gap-1 align-start")
 
     # Define table headers
