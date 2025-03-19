@@ -19,7 +19,7 @@ app, rt = fast_app(
     pico=False,
     hdrs=(
         *Theme.blue.headers(highlightjs=True),
-        Link(rel="icon", type="image/x-icon", href="/favicon.ico"),
+        Link(rel="icon", type="image/x-icon", href="/static/favicon.ico"),
         SortableJS(".sortable"),
         Style("""
             body {
