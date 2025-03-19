@@ -418,15 +418,7 @@ def view(request=None):
             heading(),
             Div(tabs),
             Div(id="new-entry-form-section"),
-            view_content(),
-            Div(
-                Img(
-                    src="/spin.svg",
-                    cls="htmx-indicator",
-                    style="width:2rem",
-                ),
-                style="display:none"
-            )
+            view_content()
         )
     )
 
