@@ -187,7 +187,9 @@ def save_entry(entry: JournalEntry): #use entry: JournalEntry
     entries.append(new_entry)
     with open(JOURNAL_ENTRIES_FILE, "w") as f:
         json.dump(entries, f, indent=4)
-    return Div(id="form-content") #return blank div!
+    
+    # Trigger a refresh of the list view after saving
+    return Div(id="form-content", hx_get="/refresh_list_view", hx_trigger="load", hx_target="#list-view-container", hx_swap="outerHTML")
 
 def load_journal_entries():
     """Loads journal entries from the JSON file."""
@@ -351,6 +353,11 @@ def dayGrid():
 
     return grid
 
+@rt("/refresh_list_view")
+def refresh_list_view():
+    """Refreshes the list view with the latest data."""
+    return listView()
+
 def listView():
     entries = load_journal_entries()
     #filter out any incorrect values
@@ -396,7 +403,7 @@ def view_content():
         Div(id="entry-view", hidden=True), 
         Ul(id="component-nav", cls="uk-switcher")(
                 Li(dayGrid()), #grid view
-                Li(listView()) #list view
+                Li(Div(id="list-view-container")(listView())) #list view
         )
     )
 
